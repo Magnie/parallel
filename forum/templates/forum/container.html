@@ -1,0 +1,38 @@
+{# Avoids cross-file divs and other stuff. #}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {# Foundation5 #}
+        {% load static %}
+        <link rel="stylesheet" href="{% static "forum/css/foundation.css" %}">
+        
+        {# Custom CSS for the Forum #}
+        <link rel="stylesheet" href="{% static "forum/css/parallel.css" %}">
+        
+        {# Plugins #}
+        <script src="{% static "forum/js/vendor/modernizr.js" %}"></script>
+        <script src="{% static "forum/js/vendor/jquery.js" %}"></script>
+        
+    </head>
+
+    <body>
+
+        {# Include header.html #}
+        {% include 'forum/header.html' %}
+
+        {# Include content #}
+        {% include view %}
+
+        {# Include footer.html #}
+        {% include 'forum/footer.html' %}
+        
+    <script src="{% static "forum/js/foundation.min.js" %}"></script>
+    <script>
+        $(document).foundation();
+    </script>
+        
+    </body>
+</html>

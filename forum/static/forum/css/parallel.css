@@ -1,0 +1,25 @@
+/* Custom CSS Goes Here */
+
+.post_info {
+    background-color: #F0F0F0;
+}
+
+.post_text {
+    background-color: #FFFFFF;
+    vertical-align: top;
+    text-align: left;
+    padding: 10px;
+}
+
+.post_options {
+    text-align: right;
+    background-color: #FAFAFA;
+}
+
+table {
+    border-width: 0;
+}
+
+.post {
+    width: 100%;
+}

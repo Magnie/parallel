@@ -1,0 +1,31 @@
+
+<div class="row">
+    <nav class="top-bar" data-topbar role="navigation">
+        <ul class="title-area">
+            <li class="name">
+                <h1><a href="{% url 'index' %}">Parallel</a></h1>
+            </li>
+        </ul>
+        
+        <section class="top-bar-section">
+            <ul class="right">
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li id="login"><a href="#">Login</a></li>
+            </ul>
+        </section>
+    </nav>
+</div>
+
+{# Login Modal #}
+<div id="loginModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <h2 id="loginTitle">Login</h2>
+    <p class="lead">Please enter your credentials.</p>
+    <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+</div>
+
+<script>
+$(document).on('click', '#login', function() {
+    $('#loginModal').foundation('reveal', 'open', '');
+});
+</script>
