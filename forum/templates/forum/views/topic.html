@@ -12,77 +12,106 @@
             {{ topic_title }}
         </h3>
         <div class="small-11 small-centered columns">
-            <table class="responsive" width='100%' cellpadding="0" cellspacing="0" border="0">
-                <tbody id="posts">
-                    <tr>
-                        <td>There seem to be no posts at the moment. Why not create one?</td>
-                        <td>The Boss</td>
-                        <td>From the Beginning of Time</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div id="posts">
+                <div class="post">
+                    <div class="row">
+                        <div class="row post_info">
+                            <div class="small-3 columns post_username">The Boss</div>
+                            <div class="small-3 columns post_date">Beginning of Time</div>
+                        </div>
+                        <div class="row">
+                            <div class="small-12 columns post_text">
+                                <p>There seem to be no posts at the moment. Why not create one?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+    <div class="row">
+        {# Include Topic Form Partial #}
+        {% include "forum/partials/create_post.html" %}
     </div>
 </div>
 
 {# Microthread Modal #}
 <div id="microModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
     <h2 id="microTitle">Microthread Title</h2>
-    <table class="responsive" width='100%' cellpadding="0" cellspacing="0" border="0">
-        <tbody id="micro_posts">
-            <tr>
-                <td>There seem to be no posts at the moment. Why not create one?</td>
-                <td>The Boss</td>
-                <td>From the Beginning of Time</td>
-            </tr>
-        </tbody>
-    </table>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-</div>
-
-{# Post Template #}
-<div class="hide">
-    <div id="post">
-        <table class="post">
-            <tbody>
-                <tr class="post_info">
-                    <th class="post_username" width="150"></th>
-                    <td class="post_other"></td>
-                    <td class="post_date" width="200"></td>
-                </tr>
-                <tr>
-                    <td class="post_text" colspan="3"></td>
-                </tr>
-                <tr>
-                    <td class="post_options" colspan="3"></td>
-                </tr>
-            </tbody>
-        </table>
+    <div id="micro_posts">
+        <div class="post">
+            <div class="row">
+                <div class="row post_info">
+                    <div class="small-3 columns post_username">The Boss</div>
+                    <div class="small-3 columns post_date">Beginning of Time</div>
+                </div>
+                <div class="row">
+                    <div class="small-12 columns post_text">
+                        <p>There seem to be no posts at the moment. Why not create one?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
 </div>
 
 <script>
 $(document).on('click', '.microthread', function() {
     $('#microModal').foundation('reveal', 'open', '');
 });
+</script>
 
-$.ajax({
-    url: '{% url 'posts' topic_id %}',
-    success: function( data ) {
-        if (data.success) {
-            $('#posts').html("");
-            if (data.posts.length > 0) {
-                for (var i = 0; i < data.posts.length; i++) {
-                    var post = data.posts[i];
-                    $('#post .post_username').html(post.post_author);
-                    $('#post .post_date').html(post.post_date);
-                    $('#post .post_text').html(post.post_text);
-                    $('#post .post_options').html('<a class="microthread" href="#">Microthread</a>');
-                    
-                    $('#posts').append( $("#post").html() );
+{# Post Template #}
+<div class="hide">
+    <div id="post">
+        <div class="post">
+            <div class="row">
+                <div class="row post_info">
+                    <div class="small-3 columns post_username"></div>
+                    <div class="small-3 columns post_date"></div>
+                </div> {# End post_info row #}
+                <div class="row">
+                    <div class="small-12 columns post_text"></div>
+                </div> {# End post_text row #}
+                <div class="row">
+                    <div class="small-12 columns post_options" ></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function add_post(e, author, text, date) {
+    $('#post .post_username').html(author);
+    $('#post .post_date').html(date);
+    $('#post .post_text').html(text);
+
+    $('#post .post_options').html("");
+    $('#post .post_options').append('<a class="microthread button tiny">Microthread</a>');
+
+    $('#posts').append( $("#post").html() );
+}
+$(document).on('add_post', add_post);
+
+function refresh_posts() {
+    $.ajax({
+        url: '{% url 'posts' topic_id %}',
+        success: function( data ) {
+            if (data.success) {
+                $('#posts').html("");
+                if (data.posts.length > 0) {
+                    for (var i = 0; i < data.posts.length; i++) {
+                        var post = data.posts[i];
+                        var args = [post.post_author, post.post_text, post.post_date];
+                        $(document).trigger('add_post', args)
+                    }
                 }
             }
         }
-    }
-});
+    });
+}
+refresh_posts();
+$(document).on('refresh_posts', refresh_posts);
 </script>

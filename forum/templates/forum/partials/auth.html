@@ -1,0 +1,177 @@
+{# Auth Modal #}
+<div id="auth_modal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
+    <ul class="tabs" data-tab>
+            <li class="tab-title right"><a href="" class="close-reveal-modal">&#215;</a></li>
+            <li class="tab-title active"><a href="#login_content">Login</a></li>
+            <li class="tab-title"><a href="#register_content">Register</a></li>
+    </ul>
+    <div class="tabs-content">
+        <div class="content active" id="login_content">
+            <div class="row">
+                <h2>Login</h2>
+                <p class="lead">Please enter your credentials.</p>
+                <div id="login_error" class="">
+                    {# Error is added in dynamically. Look in the scripts. #}
+                </div>
+                <div class="row collapse">
+                    <div class="small-4 medium-2 large-1 columns">
+                        <span class="prefix">
+                            Username:
+                        </span>
+                    </div>
+                    <div class="small-8 medium-10 large-11 columns">
+                        <input id="login_username" type="text" placeholder="Username" />
+                    </div>
+                </div>
+                
+                <div class="row collapse">
+                    <div class="small-4 medium-2 large-1 columns">
+                        <span class="prefix">
+                            Password:
+                        </span>
+                    </div>
+                    <div class="small-8 medium-10 large-11 columns">
+                        <input id="login_password" type="password" placeholder="Password" />
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="small-12 columns">
+                        <button id="login_submit" class="button expand">Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content" id="register_content">
+            <div class="row">
+                <h2>Register</h2>
+                <p class="lead">Please enter your information.</p>
+                <div class="row">
+                    <div class="medium-6 columns">
+                        <div class="row collapse">
+                            <div class="small-4 columns">
+                                <span class="prefix">
+                                    First:
+                                </span>
+                            </div>
+                            <div class="small-8 columns">
+                                <input id="register_first" type="text" placeholder="First Name" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="medium-6 columns">
+                        <div class="row collapse">
+                            <div class="small-4 columns">
+                                <span class="prefix">
+                                    Last:
+                                </span>
+                            </div>
+                            <div class="small-8 olumns">
+                                <input id="register_last" type="text" placeholder="Last Name" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row collapse">
+                    <div class="small-4 medium-2 large-1 columns">
+                        <span class="prefix">
+                            Email:
+                        </span>
+                    </div>
+                    <div class="small-8 medium-10 large-11 columns">
+                        <input id="register_email" type="text" placeholder="Email Address" />
+                    </div>
+                </div>
+                
+                <div class="row collapse">
+                    <div class="small-4 medium-2 large-1 columns">
+                        <span class="prefix">
+                            Username:
+                        </span>
+                    </div>
+                    <div class="small-8 medium-10 large-11 columns">
+                        <input id="register_username" type="text" placeholder="Username" />
+                    </div>
+                </div>
+                
+                <div class="row collapse">
+                    <div class="small-4 medium-2 large-1 columns">
+                        <span class="prefix">
+                            Password:
+                        </span>
+                    </div>
+                    <div class="small-8 medium-10 large-11 columns">
+                        <input id="register_password" type="password" placeholder="Password" />
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="small-12 columns">
+                        <button id="register_submit" class="button expand">Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Auth Modal Functions #}
+<script>
+$(document).on('click', '#login_submit', function () {
+    $.ajax({
+        url: '{% url 'login' %}',
+        data: {
+            'username': $('#login_username').val(),
+            'password': $('#login_password').val(),
+        },
+        type: 'POST',
+        dataType: 'json',
+        success: function(data) {
+            console.log(data);
+            if (data['success']) {
+                logged_in = true;
+                username = data['username'];
+                $(document).trigger('login');
+                $('#auth_modal').foundation('reveal', 'close');
+            } else {
+                $('#login_error').html(''
+                    + '<div data-alert="1" class="alert-box alert">'
+                    + 'Login failed. Please try again.'
+                    + '<a href="#" class="close">&times;</a>'
+                    + '</div>'
+                );
+            }
+        },
+    });
+});
+$(document).on('click', '#register_submit', function () {
+    $.ajax({
+        url: '{% url 'register' %}',
+        data: {
+            'first_name': $('#register_first').val(),
+            'last_name': $('#register_last').val(),
+            'email': $('#register_email').val(),
+            'username': $('#register_username').val(),
+            'password': $('#register_password').val(),
+        },
+        type: 'POST',
+        dataType: 'json',
+        success: function(data) {
+            logged_in = true;
+            username = data['username'];
+            if (data['success']) {
+                $(document).trigger('register');
+                $('#auth_modal').foundation('reveal', 'close');
+            } else {
+                $('#register_error').html(''
+                    + '<div data-alert="1" class="alert-box alert">'
+                    + 'Registration failed failed. Please try again with another username or email.'
+                    + '<a href="#" class="close">&times;</a>'
+                    + '</div>'
+                );
+            }
+        },
+    });
+});
+</script>

@@ -1,0 +1,50 @@
+<div id="create_topic" class="hide">
+    <div class="small-10 small-centered columns">
+        <div class="row">
+            <label>Create A New Topic</label>
+            <input id="topic_title" type="text" placeholder="Topic title" />
+        </div>
+        <div class="row">
+            <textarea id="post_text" style="height: 150px;" placeholder="Post text..."></textarea>
+        </div>
+        <div class="row">
+            <a id="topic_submit" class="button expand">Create</a>
+        </div>
+    </div>
+</div>
+<script>
+function topic_create() {
+    if (logged_in) {
+        $('#create_topic').removeClass('hide');
+    } else {
+        $('#create_topic').addClass('hide');
+    }
+}
+topic_create();
+$(document).on('login', topic_create);
+$(document).on('logout', topic_create);
+$(document).on('register', topic_create);
+
+$(document).on('click', '#topic_submit', function() {
+    var topic_title = $('#topic_title').val();
+    var post_text = $('#post_text').val();
+    $.ajax({
+        url: '{% url 'new_topic' %}',
+        type: 'POST',
+        data: {
+            'topic_title': topic_title,
+            'post_text': post_text,
+            'tag_id': {{ tag_id }},
+        },
+        dataType: 'json',
+        success: function(data) {
+            if (data['success']) {
+                topic_title = $('#topic_title').val("");
+                post_text = $('#post_text').val("");
+                var args = [data.topic_id, data.topic_title, data.topic_author, data.topic_date];
+                $(document).trigger('add_topic', args);
+            }
+        },
+    });
+});
+</script>

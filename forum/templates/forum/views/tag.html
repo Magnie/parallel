@@ -8,57 +8,74 @@
         </div>
     </div>
     <div class="small-12 columns">
-        <h3>
-            {{ tag_name }}
-        </h3>
-        <div class="small-11 small-centered columns">
-            <div class="row">
-                <div class="small-12 columns">
-                    <ul class="breadcrumbs">
-                        <li><a href="#">Home</a></li>
-                    </ul>
+        <div class="row">
+            <h3>
+                {{ tag_name }}
+            </h3>
+            <div class="small-11 small-centered columns">
+                <div class="row">
+                    <div class="small-12 columns">
+                        <ul class="breadcrumbs">
+                            <li><a href="#">Home</a></li>
+                        </ul>
+                    </div>
                 </div>
+                <table id="topics" class="responsive" width='100%'>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th width="150">Author</th>
+                            <th width="150">Last Post</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>There seem to be no topics. Why not create one?</td>
+                            <td>The Boss</td>
+                            <td>From the Beginning of Time</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <table id="topics" class="responsive" width='100%'>
-                <thead>
-                    <tr>
-                        <th>Title</th>
-                        <th width="150">Author</th>
-                        <th width="150">Last Post</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>There seem to be no topics. Why not create one?</td>
-                        <td>The Boss</td>
-                        <td>From the Beginning of Time</td>
-                    </tr>
-                </tbody>
-            </table>
+        </div>
+        <div class="row">
+            {# Include Topic Form Partial #}
+            {% include "forum/partials/create_topic.html" %}
         </div>
     </div>
 </div>
 
 <script>
-$.ajax({
-    url: '{% url 'topics' tag_id %}',
-    success: function( data ) {
-        if (data.success) {
-            console.log('topics retrieved');
-            html = '';
-            if (data.topics.length > 0) {
-                for (var i = 0; i < data.topics.length; i++) {
-                    var topic = data.topics[i];
-                    var url_mask = "{% url 'posts' 0 %}".replace(/0/, topic.topic_id.toString());
-                    html += '<tr>';
-                    html += '<td><a href="' + url_mask + '">' + topic.topic_title + '</a></td>';
-                    html += '<td>' + topic.topic_author + '</td>';
-                    html += '<td>' + topic.last_post + '</td>';
-                    html += '</tr>';
+function add_topic(e, topic_id, title, author, last_post) {
+    var url_mask = "{% url 'topic' 0 %}".replace(/0/, topic_id.toString());
+    var html = '';
+    html += '<tr>';
+    html += '<td><a href="' + url_mask + '">' + title + '</a></td>';
+    html += '<td>' + author + '</td>';
+    html += '<td>' + last_post + '</td>';
+    html += '</tr>';
+    $('#topics tbody').prepend(html);
+}
+
+function get_topics() {    
+    $.ajax({
+        url: '{% url 'topics' tag_id %}',
+        success: function( data ) {
+            if (data.success) {
+                $('#topics tbody').html("");
+                if (data.topics.length > 0) {
+                    for (var i = data.topics.length - 1; i != -1; i--) {
+                    //for (var i = 0; i < data.topics.length; i++) {
+                        var topic = data.topics[i];
+                        var args = [topic.topic_id, topic.topic_title, topic.topic_author, topic.last_post];
+                        $(document).trigger('add_topic', args);
+                    }
                 }
-                $('#topics tbody').html(html);
             }
         }
-    }
-});
+    });
+}
+get_topics();
+$(document).on('refresh_topics', get_topics);
+$(document).on('add_topic', add_topic);
 </script>

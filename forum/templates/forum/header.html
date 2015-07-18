@@ -1,31 +1,42 @@
-
-<div class="row">
-    <nav class="top-bar" data-topbar role="navigation">
-        <ul class="title-area">
-            <li class="name">
-                <h1><a href="{% url 'index' %}">Parallel</a></h1>
-            </li>
-        </ul>
-        
-        <section class="top-bar-section">
-            <ul class="right">
-                <li><a href="{% url 'index' %}">Home</a></li>
-                <li id="login"><a href="#">Login</a></li>
-            </ul>
-        </section>
-    </nav>
-</div>
-
-{# Login Modal #}
-<div id="loginModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
-    <h2 id="loginTitle">Login</h2>
-    <p class="lead">Please enter your credentials.</p>
-    <p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
-    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
-</div>
-
 <script>
-$(document).on('click', '#login', function() {
-    $('#loginModal').foundation('reveal', 'open', '');
+var logged_in = {{ user.is_authenticated|yesno:"true,false" }};
+var username = '{{ user.username }}';
+</script>
+
+{# Notifications #}
+<div id="notifications">
+    
+</div>
+
+{# Header setup #}
+<script>
+$.ajaxSetup({ 
+     beforeSend: function(xhr, settings) {
+         function getCookie(name) {
+             var cookieValue = null;
+             if (document.cookie && document.cookie != '') {
+                 var cookies = document.cookie.split(';');
+                 for (var i = 0; i < cookies.length; i++) {
+                     var cookie = jQuery.trim(cookies[i]);
+                     // Does this cookie string begin with the name we want?
+                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                     break;
+                 }
+             }
+         }
+         return cookieValue;
+         }
+         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+             // Only send the token to relative URLs i.e. locally.
+             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+         }
+     } 
 });
 </script>
+
+{# Include Navigation #}
+{% include "forum/partials/nav.html" %}
+
+{# Include Authentication #}
+{% include "forum/partials/auth.html" %}

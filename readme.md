@@ -11,6 +11,7 @@ STATICFILES_DIRS = (
 # Extending Parallel
 Please follow the consistency rules.
 4 spaces per tab.
-Scripts go under HTML.
-Most "get" functions should use AJAX.
+Scripts go under the HTML it directly responds to.
+Anything that retrieves or submits data should be an AJAX call.
 No hardcoded URLs. Use {% url %}.
+If views get too big, split it into "partials" and include them (makes for easier reusability too!).

@@ -10,14 +10,13 @@ def valid_input(data, _type):
     
     return data if type(data) == _type else False
 
-def valid_request(request, need_auth=True):
+def valid_request(request, need_auth=True, method='POST'):
     """
     Check if user is authenticated, there is POST data, and the test cookie
     worked.
     """
     if request.user.is_authenticated() == need_auth and \
-            request.method == 'POST' and \
-            request.session.test_cookie_worked():
+            request.method == method:
         return True
         
     return False

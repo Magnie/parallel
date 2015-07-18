@@ -1,0 +1,65 @@
+{# Navigation Bar #}
+<div class="row">
+    <nav class="top-bar" data-topbar role="navigation">
+        <ul class="title-area">
+            <li class="name">
+                <h1><a href="{% url 'index' %}">Parallel</a></h1>
+            </li>
+        </ul>
+        
+        <section class="top-bar-section">
+            <ul class="right" id="menu">
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li><a data-reveal-id="auth_modal">Login</a></li>
+            </ul>
+        </section>
+    </nav>
+</div>
+
+{# Navigation Bar Functions #}
+<script>
+function update_nav() {
+    // Update the navigation bar
+    $.ajax({
+        url: '{% url 'nav_menu' %}',
+        dataType: 'json',
+        success: function (data) {
+            if (data['success']) {
+                var items = data['items'];
+                var info = data['data'];
+                $('#menu').html("");
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    var html = '';
+                    if (info['login'] == item['name']) {
+                        html = '<li><a data-reveal-id="auth_modal">' + item['name'] + '</a></li>';
+                    } else if (info['logout'] == item['name']) {
+                        html = '<li><a id="logout">' + item['name'] + '</a></li>';
+                    } else {
+                        html = '<li><a href="' + item['url'] + '">' + item['name'] + '</a></li>';
+                    }
+                    $('#menu').append(html);
+                }
+            }
+        },
+    });
+}
+$(document).on('login', update_nav);
+$(document).on('register', update_nav);
+$(document).on('logout', update_nav);
+update_nav();
+
+$(document).on('click', '#logout', function () {
+    $.ajax({
+        url: '{% url 'logout' %}',
+        dataType: 'json',
+        success: function (data) {
+            if (data['success']) {
+                logged_in = false;
+                username = data['username'];
+                $(document).trigger('logout');
+            }
+        },
+    });
+});
+</script>

@@ -34,7 +34,7 @@ def get_topics(request, tag_id):
     
     # Validate input
     if tag_id:
-        tag = Tag.objects.filter(id=tag_id)
+        tag = Tag.objects.filter(pk=tag_id)
         if tag:
             
             # Get the topics
@@ -67,7 +67,8 @@ def create_topic(request):
         'success': False,
         'topic_id': -1,
         'topic_title': '',
-        'topic_author': ''
+        'topic_author': '',
+        'topic_date': '',
     }
 
     # Validate input
@@ -77,16 +78,16 @@ def create_topic(request):
         post_text = request.POST['post_text']
         date = timezone.now()
         if topic_title and tag_id and post_text:
-            tag = Tag.objects.filter(id=tag_id)
+            tag = Tag.objects.get(pk=tag_id)
             new_topic = Topic(
                 title=topic_title,
                 author=request.user,
                 post_date=date,
                 last_post=date
             )
-            new_topic.tags.save()
+            new_topic.save()
             new_topic.tags.add(tag)
-            new_topic.tags.save()
+            new_topic.save()
             
             new_post = Post(
                 text=post_text,
@@ -101,6 +102,7 @@ def create_topic(request):
             response['topic_id'] = new_topic.id
             response['topic_title'] = new_topic.title
             response['topic_author'] = new_topic.author.username
+            response['topic_date'] = date
             
             # Everything was successful!
             response['success'] = True

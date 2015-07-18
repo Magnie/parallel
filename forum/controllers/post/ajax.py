@@ -117,8 +117,11 @@ def create_post(request):
         parent_id = request.POST['parent_id']
         post_text = request.POST['post_text']
         if topic_id and parent_id and post_text:
-            topic = Topic.objects.filter(id=topic_id)
+            topic = Topic.objects.filter(id=topic_id)[0]
+            
             parent = Post.objects.filter(id=parent_id)
+            if not parent:
+                parent = None
             
             new_post = Post(
                 parent=parent,
@@ -130,6 +133,9 @@ def create_post(request):
             new_post.save()
             new_post.topics.add(topic)
             new_post.save()
+            
+            topic.last_post = timezone.now()
+            topic.save()
             
             # Set the response
             if new_post.parent:
