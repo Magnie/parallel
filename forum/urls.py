@@ -26,6 +26,7 @@ urlpatterns = [
     
     # Post Views and AJAX
     url(r'^ajax/posts/(\d+)$', post_ajax.get_posts, name='posts'),
+    url(r'^ajax/posts/(?P<topic_id>\d+)/(?P<offset>\d+)/$', post_ajax.get_posts, name='posts'),
     url(r'^ajax/posts/create_post$', post_ajax.create_post, name='new_post'),
     
     # Authentication AJAX
@@ -35,4 +36,6 @@ urlpatterns = [
     
     # Navigation
     url(r'^ajax/nav/menu', nav_ajax.get_nav, name='nav_menu'),
+    url(r'^ajax/nav/breadcrumbs/(\w+)/(\d+)', nav_ajax.get_breadcrumbs, name='breadcrumbs'),
+    url(r'^ajax/nav/subtags/(\d+)', nav_ajax.get_subtags, name='subtags'),
 ]

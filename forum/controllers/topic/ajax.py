@@ -18,7 +18,7 @@ class Topic(models.Model):
 
 from django.utils import timezone
 from django.http import JsonResponse
-from forum.models import Tag, Topic, Post
+from forum.models import Tag, Topic, Post, TopicPost, TagTopic
 from forum.utils import valid_input, valid_request
 
 def get_topics(request, tag_id):
@@ -34,11 +34,11 @@ def get_topics(request, tag_id):
     
     # Validate input
     if tag_id:
-        tag = Tag.objects.filter(pk=tag_id)
+        tag = Tag.objects.get(pk=tag_id)
         if tag:
             
             # Get the topics
-            temp_topics = Topic.objects.filter(tags=tag).order_by('-last_post')
+            temp_topics = tag.topics.all().order_by('-last_post')
             topics = []
             for t in temp_topics:
                 topics.append({
@@ -86,8 +86,13 @@ def create_topic(request):
                 last_post=date
             )
             new_topic.save()
-            new_topic.tags.add(tag)
-            new_topic.save()
+            
+            tag_topic = TagTopic.objects.create(
+                tag=tag,
+                topic=new_topic,
+                date_added=date
+            )
+            tag_topic.save()
             
             new_post = Post(
                 text=post_text,
@@ -95,8 +100,12 @@ def create_topic(request):
                 post_date=date
             )
             new_post.save()
-            new_post.topics.add(new_topic)
-            new_post.save()
+            
+            topic_post = TopicPost.objects.create(
+                topic=new_topic,
+                post=new_post,
+                date_added=date
+            )
             
             # Set the response
             response['topic_id'] = new_topic.id

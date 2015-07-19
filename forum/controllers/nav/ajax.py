@@ -48,3 +48,63 @@ def get_nav(request):
     
     # Return results
     return JsonResponse(response)
+
+def get_breadcrumbs(request, page, pid):
+    """
+    desc: Get the parenting tags of a topic or another tag
+    params: str page, int pid
+    return array({str tag_name, id tag_id})
+    """
+    response = {
+        'success': False,
+        'tags': [],
+    }
+    if page and pid:
+        if page == 'topic':
+            topic = Topic.objects.get(pk=pid)
+            temp_tags = Tag.objects.filter(topics=topic)
+        elif page == 'tag':
+            tag = Tag.objects.get(pk=pid)
+            temp_tags = Tag.objects.filter(tags=tag)
+        
+        tags = []
+        for t in temp_tags:
+            tags.append({
+                'tag_name': t.name,
+                'tag_id': t.id,
+            })
+        
+        response['tags'] = tags
+        
+        response['success'] = True
+    
+    # Return results
+    return JsonResponse(response)
+
+def get_subtags(request, tag_id):
+    """
+    desc: Get the parenting tags of a topic or another tag
+    params: str page, int pid
+    return array({str tag_name, id tag_id})
+    """
+    response = {
+        'success': False,
+        'tags': [],
+    }
+    if tag_id:
+        tag = Tag.objects.get(pk=tag_id)
+        temp_tags = tag.tags.all()
+        
+        tags = []
+        for t in temp_tags:
+            tags.append({
+                'tag_name': t.name,
+                'tag_id': t.id,
+            })
+        
+        response['tags'] = tags
+        
+        response['success'] = True
+    
+    # Return results
+    return JsonResponse(response)

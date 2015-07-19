@@ -32,7 +32,7 @@ return JsonResponse(response)
 
 from django.utils import timezone
 from django.http import JsonResponse
-from forum.models import Tag, Topic, Post
+from forum.models import Tag, Topic, Post, TagTopic
 from forum.utils import valid_input, valid_request
 
 def get_tags(request, tag_id):
@@ -48,7 +48,7 @@ def get_tags(request, tag_id):
     
     # Validate input
     if tag_id:
-        tag = Tag.objects.filter(id=tag_id)
+        tag = Tag.objects.get(pk=tag_id)
         if tag:
             
             # Get the tags

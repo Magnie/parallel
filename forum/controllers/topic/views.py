@@ -13,6 +13,8 @@ def topic(request, topic_id):
     data = {
         'view': 'forum/views/topic.html',
         'topic_id': topic.id,
+        'id': topic.id,
+        'page': 'topic',
         'topic_title': topic.title
     }
     return render(request, 'forum/container.html', data)

@@ -1,0 +1,27 @@
+<div class="small-12 small-centered columns">
+    <ul id="subtags" class="breadcrumbs">
+        <li>No subtags.</li>
+    </ul>
+</div>
+
+<script>
+function refresh_subtags() {
+    $.ajax({
+        url: '{% url 'subtags' tag_id %}',
+        dataType: 'json',
+        success: function(data) {
+            if (data['success']) {
+                $('#subtags').html("");
+                var tags = data['tags'];
+                for (var i = 0; i < tags.length; i++) {
+                    tag = tags[i];
+                    var url_mask = "{% url 'tag' 0 %}".replace(/0/, tag['tag_id'].toString());
+                    var html = '<li><a href="' + url_mask + '">' + tag['tag_name'] + '</a></li>';
+                    $('#subtags').append(html);
+                }
+            }
+        },
+    });
+}
+refresh_subtags();
+</script>

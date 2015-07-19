@@ -5,7 +5,6 @@ Model Reference
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
     parent = models.ForeignKey('Post', blank=True)
-    topics = models.ManyToManyField("Topic")
     text = models.TextField()
     author = models.ForeignKey(User, blank=True)
     post_date = models.DateTimeField()
@@ -17,33 +16,42 @@ class Post(models.Model):
 
 from django.utils import timezone
 from django.http import JsonResponse
-from forum.models import Tag, Topic, Post
-from forum.utils import valid_input, valid_request
+from forum.models import Tag, Topic, Post, TopicPost
+from forum.utils import *
 
-def get_posts(request, topic_id):
+def get_posts(request, topic_id, offset='0'):
     """
     desc: Get a list of posts
-    params: int topic_id
+    params: int topic_id, int offset
     return: array({int post_id, str post_author, int author_id, post_text, post_date}) posts
     """
     response = {
         'success': False,
-        'posts': []
+        'posts': [],
+        'pages': 0,
     }
-
+    offset = int(offset)
     # Validate input
     if topic_id:
-        topic = Topic.objects.filter(id=topic_id)
+        topic = Topic.objects.get(pk=topic_id)
         
         # If valid, execute.
         if topic:
-            temp_posts = Post.objects.filter(topics=topic)
+            start = POSTS_PER_PAGE * offset
+            end = start + POSTS_PER_PAGE
+            temp_posts = topic.posts.all()
+            posts_count = temp_posts.count()
+            pages = (posts_count + POSTS_PER_PAGE - 1) / POSTS_PER_PAGE
+            temp_posts = temp_posts[start:end]
             posts = []
             for p in temp_posts:
+                name = '{0} {1}'.format(p.author.first_name, p.author.last_name)
+                if name == ' ':
+                    name = p.author.username
                 posts.append({
                     'parent_id': p.parent.id if p.parent else 0,
                     'post_id': p.id,
-                    'post_author': p.author.username,
+                    'post_author': name,
                     'author_id': p.author.id,
                     'post_text': p.text,
                     'post_date': p.post_date.strftime('%a, %d %b %Y %H:%M:%S')
@@ -51,6 +59,7 @@ def get_posts(request, topic_id):
             
             # Set the response
             response['posts'] = posts
+            response['pages'] = pages
             
             # Everything was successful!
             response['success'] = True
@@ -75,7 +84,7 @@ def get_micro(request, post_id):
         
         # If valid, execute.
         if topic:
-            temp_posts = Post.objects.filter(topics=topic)
+            temp_posts = topic.posts.all()
             posts = []
             for p in temp_posts:
                 posts.append({
@@ -116,8 +125,9 @@ def create_post(request):
         topic_id = request.POST['topic_id']
         parent_id = request.POST['parent_id']
         post_text = request.POST['post_text']
+        date = timezone.now()
         if topic_id and parent_id and post_text:
-            topic = Topic.objects.filter(id=topic_id)[0]
+            topic = Topic.objects.get(pk=topic_id)
             
             parent = Post.objects.filter(id=parent_id)
             if not parent:
@@ -129,12 +139,17 @@ def create_post(request):
                 author=request.user,
                 post_date=timezone.now()
             )
-            
-            new_post.save()
-            new_post.topics.add(topic)
             new_post.save()
             
-            topic.last_post = timezone.now()
+            # Allows you to add the same post to different topics at different
+            # points in time.
+            relationship = TopicPost.objects.create(
+                post=new_post,
+                topic=topic,
+                date_added=date
+            )
+            relationship.save()
+            topic.last_post = date
             topic.save()
             
             # Set the response

@@ -1,4 +1,5 @@
 # AJAX for authentication
+from django.db.models import Q
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -52,7 +53,12 @@ def register(request):
         username = request.POST['username'].lower()
         password = request.POST['password']
         if first_name and last_name and email and username and password:
-            users = User.objects.filter(username=username).count()
+            users = User.objects.filter(
+                Q(username=username) | (
+                    Q(first_name=first_name) &
+                    Q(last_name=last_name)
+                )
+            ).count()
             if users == 0:
                 user = User.objects.create_user(username, email, password)
                 user.first_name = first_name

@@ -13,6 +13,8 @@ def tag(request, tag_id):
     data = {
         'view': 'forum/views/tag.html',
         'tag_id': tag.id,
+        'id': tag.id,
+        'page': 'tag',
         'tag_name': tag.name
     }
     return render(request, 'forum/container.html', data)

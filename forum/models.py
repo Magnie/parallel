@@ -9,10 +9,16 @@ class Tag(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=32, unique=True)
     tags = models.ManyToManyField("self", blank=True, symmetrical=False)
-    itopics = models.ManyToManyField("Topic", blank=True)
-    
-    groups = models.ManyToManyField("FGroup", blank=True)
-    permissions = models.ManyToManyField("FPermission", blank=True)
+    itopics = models.ManyToManyField(
+        "Topic",
+        blank=True,
+        related_name='itopics'
+    )
+    topics = models.ManyToManyField(
+        'Topic',
+        through='TagTopic',
+        related_name='topics'
+    )
     
     def __unicode__(self):
        return self.name
@@ -20,13 +26,11 @@ class Tag(models.Model):
 
 class Topic(models.Model):
     id = models.AutoField(primary_key=True)
-    tags = models.ManyToManyField("Tag", symmetrical=False)
+    posts = models.ManyToManyField('Post', through='TopicPost')
     title = models.CharField(max_length=128)
     author = models.ForeignKey(User, unique=False)
     post_date = models.DateTimeField()
     last_post = models.DateTimeField()
-    
-    permissions = models.ManyToManyField(Permission, blank=True)
     
     def __unicode__(self):
        return self.title
@@ -34,11 +38,19 @@ class Topic(models.Model):
     class Meta:
         ordering = ['last_post']
 
+class TagTopic(models.Model):
+    "Tag to Topic relationship"
+    topic = models.ForeignKey('Topic')
+    tag = models.ForeignKey('Tag')
+    date_added = models.DateTimeField(blank=True)
+    
+    class Meta:
+        ordering = ('date_added',)
+
 
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
-    parent = models.ForeignKey('Post', null=True, blank=True, unique=False) # Allows for microthreads
-    topics = models.ManyToManyField("Topic")
+    parent = models.ForeignKey('self', null=True, blank=True, unique=False) # Allows for microthreads
     text = models.TextField()
     author = models.ForeignKey(User, unique=False)
     post_date = models.DateTimeField()
@@ -49,11 +61,18 @@ class Post(models.Model):
     class Meta:
         ordering = ['post_date']
 
+class TopicPost(models.Model):
+    "Topic to Post relationship"
+    post = models.ForeignKey('Post')
+    topic = models.ForeignKey('Topic')
+    date_added = models.DateTimeField()
+    
+    class Meta:
+        ordering = ('date_added',)
 
-class FUser(models.Model):
+
+class ForumUser(models.Model):
     user = models.OneToOneField(User)
-    permissions = models.ManyToManyField("FPermission", symmetrical=False, blank=True)
-    groups = models.ManyToManyField("FGroup", symmetrical=False, blank=True)
     
     def __unicode__(self):
         return self.user
@@ -64,20 +83,3 @@ def username_check(sender, instance, **kwargs):
        pass
 
 pre_save.connect(username_check, sender=User)
-
-
-class FGroup(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=32, unique=True)
-    permissions = models.ManyToManyField("FPermission", symmetrical=False, blank=True)
-    
-    def __unicode__(self):
-        return self.name
-
-
-class FPermission(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=32, unique=True)
-    
-    def __unicode__(self):
-        return self.name
