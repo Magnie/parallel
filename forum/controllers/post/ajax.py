@@ -14,7 +14,7 @@ class Post(models.Model):
 -----
 """
 
-from django.utils import timezone
+from django.utils import timezone, html
 from django.http import JsonResponse
 from forum.models import Tag, Topic, Post, TopicPost
 from forum.utils import *
@@ -29,6 +29,7 @@ def get_posts(request, topic_id, offset='0'):
         'success': False,
         'posts': [],
         'pages': 0,
+        'page': offset,
     }
     offset = int(offset)
     # Validate input
@@ -50,6 +51,7 @@ def get_posts(request, topic_id, offset='0'):
                     name = p.author.username
                 posts.append({
                     'parent_id': p.parent.id if p.parent else 0,
+                    'parent_text': p.parent.text if p.parent else '',
                     'post_id': p.id,
                     'post_author': name,
                     'author_id': p.author.id,
@@ -92,7 +94,7 @@ def get_micro(request, post_id):
                     'post_id': p.id,
                     'post_author': p.author.username,
                     'author_id': p.author.id,
-                    'post_text': p.text,
+                    'post_text': html.escape(p.text),
                     'post_date': p.post_date.strftime('%a, %d %b %Y %H:%M:%S')
                 })
             
@@ -124,12 +126,12 @@ def create_post(request):
     if valid_request(request):
         topic_id = request.POST['topic_id']
         parent_id = request.POST['parent_id']
-        post_text = request.POST['post_text']
+        post_text = html.conditional_escape(request.POST['post_text'])
         date = timezone.now()
         if topic_id and parent_id and post_text:
             topic = Topic.objects.get(pk=topic_id)
             
-            parent = Post.objects.filter(id=parent_id)
+            parent = Post.objects.get(pk=parent_id)
             if not parent:
                 parent = None
             

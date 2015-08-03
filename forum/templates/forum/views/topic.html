@@ -25,11 +25,117 @@
             </div>
         </div>
     </div>
+    <div class="pagination-centered">
+        {# TODO: Use classes instead of id, add to top of posts. #}
+        <ul class="pagination" id="pages">
+        </ul>
+    </div>
     <div class="row">
         {# Include Topic Form Partial #}
         {% include "forum/partials/create_post.html" %}
     </div>
 </div>
+
+<script>
+$(document).on('click', '.show_post', function() {
+    var parent_id = $(this).data('parent_id');
+    var text = $(this).parents('.post').clone();
+    text.find('.post_options').remove();
+    $(document).trigger('show_post', [parent_id, text.html()]);
+});
+
+$(document).on('mouseenter', '.post', function() {
+    $(this).children().find('.post_options').removeClass('hide');
+});
+
+$(document).on('mouseleave', '.post', function() {
+    $(this).find('.post_options').addClass('hide');
+});
+</script>
+
+{# Post Template #}
+<div class="hide">
+    <div id="post">
+        <div class="post">
+            <div class="row">
+                <div class="row post_info">
+                    <div class="small-3 columns post_username"></div>
+                    <div class="small-3 columns post_date"></div>
+                </div> {# End post_info row #}
+                <div class="row">
+                    <div class="small-12 columns post_text"></div>
+                </div> {# End post_text row #}
+                <div class="row">
+                    <div class="small-12 columns post_options hide" >
+                        <a class="show_post button tiny left">Reply</a>
+                        <a class="microthread button tiny">Microthread</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function add_post(e, author, text, date, post_id) {
+    $('#post .post_username').html(author);
+    $('#post .post_date').html(date);
+    $('#post .post_text').html(text);
+
+    var show_post = $('#post .post_options .show_post');
+    show_post.data('parent_id', post_id);
+
+    $("#post .post").clone(true).appendTo($('#posts'));
+}
+$(document).on('add_post', add_post);
+
+var page_num = {{ page_num }};
+function refresh_posts(page_num) {
+    var url_mask = '{% url 'posts' topic_id 0 %}'.replace(/0/, page_num);
+    $.ajax({
+        url: url_mask,
+        success: function( data ) {
+            if (data.success) {
+                $('#posts').html("");
+                if (data.posts.length > 0) {
+                    {# Add posts to the page #}
+                    for (var i = 0; i < data.posts.length; i++) {
+                        var post = data.posts[i];
+                        var args = [post.post_author, post.post_text, post.post_date, post.post_id];
+                        $(document).trigger('add_post', args);
+                    }
+                    
+                    {# Build Pagination #}
+                    var num_pages = data['pages'];
+                    var page = data['page'];
+                    var pages = $('#pages');
+                    var url_page = '{% url 'topic' topic_id 0 %}';
+                    
+                    if (page > 0) {
+                        var html = '<li class="arrow"><a href="' + url_page.replace(/0/, page_num - 1) + '">&laquo;</a></li>';
+                        pages.append(html);
+                    }
+                    
+                    pages.append('<li class="current"><a>Pages</a></li>');
+                    
+                    if (page < num_pages - 1) {
+                        var html = '<li class="arrow"><a href="' + url_page.replace(/0/, page_num + 1) + '">&raquo;</a></li>';
+                        pages.append(html);
+                    }
+                    if (num_pages > 6) {
+                        // <li><a href="">1</a></li>
+                        // <li class="unavailable"><a href="">&hellip;</a></li>
+                        // <li><a href="">10</a></li>
+                        // <li class="arrow"><a href="">&raquo;</a></li>
+                    }
+                }
+            }
+        }
+    });
+}
+refresh_posts(page_num);
+$(document).on('refresh_posts', refresh_posts);
+</script>
 
 {# Microthread Modal #}
 <div id="microModal" class="reveal-modal" data-reveal aria-labelledby="modalTitle" aria-hidden="true" role="dialog">
@@ -56,58 +162,4 @@
 $(document).on('click', '.microthread', function() {
     $('#microModal').foundation('reveal', 'open', '');
 });
-</script>
-
-{# Post Template #}
-<div class="hide">
-    <div id="post">
-        <div class="post">
-            <div class="row">
-                <div class="row post_info">
-                    <div class="small-3 columns post_username"></div>
-                    <div class="small-3 columns post_date"></div>
-                </div> {# End post_info row #}
-                <div class="row">
-                    <div class="small-12 columns post_text"></div>
-                </div> {# End post_text row #}
-                <div class="row">
-                    <div class="small-12 columns post_options" ></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function add_post(e, author, text, date) {
-    $('#post .post_username').html(author);
-    $('#post .post_date').html(date);
-    $('#post .post_text').html(text);
-
-    $('#post .post_options').html("");
-    $('#post .post_options').append('<a class="microthread button tiny">Microthread</a>');
-
-    $('#posts').append( $("#post").html() );
-}
-$(document).on('add_post', add_post);
-
-function refresh_posts() {
-    $.ajax({
-        url: '{% url 'posts' topic_id %}',
-        success: function( data ) {
-            if (data.success) {
-                $('#posts').html("");
-                if (data.posts.length > 0) {
-                    for (var i = 0; i < data.posts.length; i++) {
-                        var post = data.posts[i];
-                        var args = [post.post_author, post.post_text, post.post_date];
-                        $(document).trigger('add_post', args)
-                    }
-                }
-            }
-        }
-    });
-}
-refresh_posts();
-$(document).on('refresh_posts', refresh_posts);
 </script>

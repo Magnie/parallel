@@ -16,7 +16,7 @@ function refresh_breadcrumbs() {
                 for (var i = 0; i < tags.length; i++) {
                     tag = tags[i];
                     var url_mask = "{% url 'tag' 0 %}".replace(/0/, tag['tag_id'].toString());
-                    var html = '<li><a href="' + url_mask + '">' + tag['tag_name'] + '</a></li>';
+                    var html = '<li><a href="' + url_mask + '"><span class="label">' + tag['tag_name'] + '</span></a></li>';
                     $('#breadcrumbs').append(html);
                 }
             }

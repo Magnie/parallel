@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^ajax/topics/(\d+)$', topic_ajax.get_topics, name='topics'),
     url(r'^ajax/topics/create$', topic_ajax.create_topic, name='new_topic'),
     url(r'^topic/(\d+)$', topic_view.topic, name='topic'),
+    url(r'^topic/(\d+)/(\d+)$', topic_view.topic, name='topic'),
     
     
     # Post Views and AJAX

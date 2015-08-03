@@ -2,7 +2,7 @@ import itertools
 
 # Settings
 TOPICS_PER_PAGE = 20
-POSTS_PER_PAGE = 15
+POSTS_PER_PAGE = 5
 
 def valid_input(data, _type):
     "Return the input if it matches the _type"

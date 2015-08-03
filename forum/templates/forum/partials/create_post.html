@@ -1,6 +1,14 @@
-<div id="create_post" class="hide">
-    <div class="small-8 small-centered columns">
+<div id="create_post" class="reveal-modal" data-reveal>
+    <h3>Create Reply</h3>
+    <a class="close-reveal-modal" aria-label="Close">&#215;</a>
+    <div class="row">
+        <div class="small-12 small-centered columns">
+            <p id="reply_text"></p>
+        </div>
+    </div>
+    <div class="small-10 small-centered columns">
         <div class="row">
+            <input type="hidden" id="parent_id" value="" />
             <label>Create A New Post</label>
             <textarea id="post_text" style="height: 150px;" placeholder="Post text..."></textarea>
         </div>
@@ -23,21 +31,35 @@ $(document).on('login', post_create);
 $(document).on('logout', post_create);
 $(document).on('register', post_create);
 
+function show_post(e, parent_id, text) {
+    $('#create_post').foundation('reveal', 'open', '');
+    $('#parent_id').val(parent_id);
+    $('#reply_text').html(text);
+}
+$(document).on('show_post', show_post);
+
 $(document).on('click', '#post_submit', function() {
     var post_text = $('#post_text').val();
+    var parent_id = $('#parent_id').val();
     $.ajax({
         url: '{% url 'new_post' %}',
         type: 'POST',
         data: {
             'topic_id': {{ topic_id }},
-            'parent_id': 0,
+            'parent_id': parent_id,
             'post_text': post_text,
         },
         dataType: 'json',
         success: function(data) {
             if (data['success']) {
-                var args = [data.post_author, data.post_text, data.post_date];
+                var args = [
+                    data.post_author,
+                    data.post_text,
+                    data.post_date,
+                    data.post_id
+                ];
                 $(document).trigger('add_post', args);
+                $('#create_post').foundation('reveal', 'close', '');
             }
         },
     });
